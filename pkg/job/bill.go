@@ -16,9 +16,11 @@ func BillNotice() {
 	userServer := user_server.GetClient()
 	users := []int{1, 4, 5}
 	for _, uid := range users {
+		log.Get().Info("bill notice uid:%d", uid)
 		uinfo, err := userServer.ClientGetUserByUid(context.Background(), &user_server.ClientGetUserByUidReq{
 			Uid: int64(uid),
 		})
+		log.Get().Info("bill notice uinfo:%v", uinfo)
 		if err != nil {
 			log.Get().Error("bill notice err:%v", err)
 			continue
