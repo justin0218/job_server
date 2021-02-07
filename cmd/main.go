@@ -18,6 +18,7 @@ func main() {
 	log := new(store.Log)
 	log.Get().Debug("server started at %v", time.Now())
 	fmt.Printf("server started at %v \n", time.Now())
+	job.BillNotice()
 	job.Run()
 	select {}
 }
