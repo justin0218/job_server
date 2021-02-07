@@ -16,13 +16,15 @@ func BillNotice() {
 	userServer := user_server.GetClient()
 	users := []int{1, 4, 5}
 	for _, uid := range users {
-		log.Get().Info("bill notice uid:%d", uid)
 		uinfo, err := userServer.ClientGetUserByUid(context.Background(), &user_server.ClientGetUserByUidReq{
 			Uid: int64(uid),
 		})
-		log.Get().Info("bill notice uinfo:%v", uinfo)
 		if err != nil {
 			log.Get().Error("bill notice err:%v", err)
+			continue
+		}
+		if uinfo.Code != 200 {
+			log.Get().Error("bill notice err:%s", uinfo.Msg)
 			continue
 		}
 		data := make(map[string]*wechat_server.TemplateItem)
@@ -31,7 +33,7 @@ func BillNotice() {
 		data["keyword2"] = &wechat_server.TemplateItem{Value: time.Now().Add(time.Hour * 24).Format("2006-01-02 15:04:05")}
 		data["keyword3"] = &wechat_server.TemplateItem{Value: "每天"}
 		data["remark"] = &wechat_server.TemplateItem{Value: fmt.Sprintf("%s，今天是您预约的记账提醒日，请点击记账！", uinfo.Nickname)}
-		_, err = wechatServer.SendTemplate(context.Background(), &wechat_server.SendTemplateReq{
+		sendRet, err := wechatServer.SendTemplate(context.Background(), &wechat_server.SendTemplateReq{
 			TemplateDefine: wechat_server.TemplateDefine_bill_notice,
 			Account:        wechat_server.Account_momo_za_huo_pu,
 			Template: &wechat_server.Template{
@@ -42,6 +44,10 @@ func BillNotice() {
 		})
 		if err != nil {
 			log.Get().Error("bill notice err:%v", err)
+			continue
+		}
+		if sendRet.Res.Code != 200 {
+			log.Get().Error("bill notice err:%s", uinfo.Msg)
 			continue
 		}
 	}
