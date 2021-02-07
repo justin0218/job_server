@@ -8,7 +8,10 @@ import (
 
 func init() {
 	TaskService := new(TaskService)
-	TaskService.BillNotice(1)
+	//模拟多个实例，测试分布式锁
+	for i := 0; i < 8; i++ {
+		TaskService.BillNotice(1)
+	}
 }
 
 type TaskService struct {
