@@ -30,7 +30,7 @@ func NewModel(db *gorm.DB) *Model {
 func (s *Model) InitLock(taskId int) {
 	db := s.Db.Table(s.Name)
 	db.Where("id = ?", taskId).Updates(map[string]interface{}{
-		"lock": 0,
+		"lock": 1,
 	})
 	return
 }
