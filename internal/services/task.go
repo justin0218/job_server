@@ -8,9 +8,11 @@ import (
 
 func init() {
 	TaskService := new(TaskService)
+	taskModel := task.NewModel(TaskService.Mysql.Get())
+	taskLockModel := taskModel.InitLock(1)
 	//模拟多个实例，测试分布式锁
 	for i := 0; i < 8; i++ {
-		TaskService.BillNotice(1)
+		TaskService.BillNotice(taskLockModel)
 	}
 }
 
@@ -19,17 +21,15 @@ type TaskService struct {
 }
 
 //
-func (s *TaskService) BillNotice(taskId int) {
-	taskModel := task.NewModel(s.Mysql.Get())
-	taskModel.InitLock(taskId)
+func (s *TaskService) BillNotice(taskLockModel *task.Model) {
 	c := cron.New()
 	spec := "0 0 18 * * ?"
 	_ = c.AddFunc(spec, func() {
-		err := taskModel.Lock(taskId)
+		err := taskLockModel.Lock()
 		if err != nil {
 			return
 		}
-		defer taskModel.UnLock(taskId)
+		defer taskLockModel.UnLock()
 		job.BillNotice()
 	})
 	c.Start()

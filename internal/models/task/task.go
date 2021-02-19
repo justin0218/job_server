@@ -9,15 +9,16 @@ import (
 type Task struct {
 	Id        int       `json:"id"`
 	Name      string    `json:"name"`
-	Lock      int       `json:"lock"`
+	LockFlag  int       `json:"lock_flag"`
 	Disabled  int       `json:"disabled"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Model struct {
-	Db   *gorm.DB
-	Name string
+	Db     *gorm.DB
+	Name   string
+	TaskId int
 }
 
 func NewModel(db *gorm.DB) *Model {
@@ -27,17 +28,18 @@ func NewModel(db *gorm.DB) *Model {
 	}
 }
 
-func (s *Model) InitLock(taskId int) {
+func (s *Model) InitLock(taskId int) *Model {
 	db := s.Db.Table(s.Name)
 	db.Where("id = ?", taskId).Updates(map[string]interface{}{
-		"lock": 1,
+		"lock_flag": 1,
 	})
-	return
+	s.TaskId = taskId
+	return s
 }
 
-func (s *Model) Lock(taskId int) (err error) {
+func (s *Model) Lock() (err error) {
 	db := s.Db.Table(s.Name)
-	query := db.Where("id = ?", taskId)
+	query := db.Where("id = ?", s.TaskId)
 	tk := new(Task)
 	err = query.First(tk).Error
 	if err != nil {
@@ -47,22 +49,22 @@ func (s *Model) Lock(taskId int) (err error) {
 		err = fmt.Errorf("lock is disabled！")
 		return
 	}
-	err = query.UpdateColumn("lock", gorm.Expr("lock - ?", 1)).Error
+	err = query.UpdateColumn("lock_flag", gorm.Expr("lock_flag - ?", 1)).Error
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (s *Model) UnLock(taskId int) (err error) {
+func (s *Model) UnLock() (err error) {
 	db := s.Db.Table(s.Name)
-	query := db.Where("id = ?", taskId)
+	query := db.Where("id = ?", s.TaskId)
 	tk := new(Task)
 	err = query.First(tk).Error
 	if err != nil {
 		return
 	}
-	err = query.UpdateColumn("lock", 0).Error
+	err = query.UpdateColumn("lock_flag", 0).Error
 	if err != nil {
 		return
 	}
