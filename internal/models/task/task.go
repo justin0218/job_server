@@ -64,7 +64,7 @@ func (s *Model) UnLock() (err error) {
 	if err != nil {
 		return
 	}
-	err = query.UpdateColumn("lock_flag", 0).Error
+	err = query.UpdateColumn("lock_flag", 1).Error
 	if err != nil {
 		return
 	}
