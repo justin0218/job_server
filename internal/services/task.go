@@ -9,11 +9,10 @@ import (
 func init() {
 	TaskService := new(TaskService)
 	taskModel := task.NewModel(TaskService.Mysql.Get())
-	taskLockModel := taskModel.InitLock(1)
-	//模拟多个实例，测试分布式锁
-	for i := 0; i < 8; i++ {
-		TaskService.BillNotice(taskLockModel)
-	}
+
+	TaskService.BillNotice(taskModel.InitLock(1))
+	TaskService.AutoCloseOrder(taskModel.InitLock(2))
+
 }
 
 type TaskService struct {
@@ -31,6 +30,20 @@ func (s *TaskService) BillNotice(taskLockModel *task.Model) {
 		}
 		defer taskLockModel.UnLock()
 		job.BillNotice()
+	})
+	c.Start()
+}
+
+func (s *TaskService) AutoCloseOrder(taskLockModel *task.Model) {
+	c := cron.New()
+	spec := "0/10 * * * * ?"
+	_ = c.AddFunc(spec, func() {
+		err := taskLockModel.Lock()
+		if err != nil {
+			return
+		}
+		defer taskLockModel.UnLock()
+		job.AutoCloseOrder()
 	})
 	c.Start()
 }

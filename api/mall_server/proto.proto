@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option go_package = "mall_server";
+
+service mall {
+  rpc get_goods_detail(get_goods_detail_req) returns (get_goods_detail_res) {}
+  rpc create_order(create_order_req) returns (create_order_res) {}
+  rpc auto_close_order(auto_close_order_req) returns (auto_close_order_res) {}
+}
+
+message sku{
+  int64 id = 1;
+  string name = 2;
+  string cover = 3;
+  int64 goods_id = 4;
+  int64 price = 5;
+  int64 inventory = 6;
+}
+
+message get_goods_detail_req{
+  int64 goods_id = 1;
+}
+
+message get_goods_detail_res{
+  int64 goods_id = 1;
+  string name = 2;
+  string images = 3;
+  int32 status = 4;
+  repeated sku skus = 5;
+}
+
+message create_order_req{
+  int64 goods_id = 1;
+  int64 sku_id = 2;
+  int64 buy_num = 3;
+  int64 uid = 4;
+  string phone = 5;
+  string name = 6;
+  string province = 7;
+  string city = 8;
+  string region = 9;
+  string addr = 10;
+}
+message create_order_res{
+  string order_code = 1;
+  string goods_name = 2;
+  string sku_name = 3;
+  int64 price = 4;
+}
+
+message auto_close_order_req{
+
+}
+
+message auto_close_order_res{
+
+}
+
+
+//protoc -I . --go_out=plugins=grpc:. api/mall_server/proto.proto
