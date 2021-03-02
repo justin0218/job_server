@@ -7,6 +7,8 @@ import (
 )
 
 func init() {
+	job.AutoCloseOrder()
+
 	TaskService := new(TaskService)
 	taskModel := task.NewModel(TaskService.Mysql.Get())
 
