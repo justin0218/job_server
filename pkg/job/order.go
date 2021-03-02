@@ -7,5 +7,5 @@ import (
 
 func AutoCloseOrder() {
 	mallServer := mall_server.GetClient()
-	mallServer.AutoCloseOrder(context.Background(), nil)
+	mallServer.AutoCloseOrder(context.Background(), &mall_server.AutoCloseOrderReq{})
 }
